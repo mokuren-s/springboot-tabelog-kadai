@@ -11,8 +11,9 @@ import com.example.tabelog.entity.Review;
 import com.example.tabelog.entity.User;
 
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
-	   public List<Review> findTop2ByRestaurantOrderByCreatedAtDesc(Restaurant restaurant);
-	   public Review findByRestaurantAndUser(Restaurant restaurant, User user);
-	   public long countByRestaurant(Restaurant restaurant);
-	   public Page<Review> findByRestaurantOrderByCreatedAtDesc(Restaurant restaurant, Pageable pageable);
-	}
+	public List<Review> findTop2ByRestaurantOrderByCreatedAtDesc(Restaurant restaurant);
+	public long countByRestaurant(Restaurant restaurant);
+	public Review findByRestaurantAndUser(Restaurant restaurant, User user);
+	public Page<Review> findByRestaurantOrderByCreatedAtDesc(Restaurant restaurant, Pageable pageable);
+	public Review findFirstByOrderByIdDesc();
+}

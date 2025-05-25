@@ -41,7 +41,7 @@ public class User {
 	private Boolean enabled;
 	
 	@Column(name = "stripe_customer_id")
-	private Integer stripeCustomerId;
+	private String stripeCustomerId;
 	
 	@Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;

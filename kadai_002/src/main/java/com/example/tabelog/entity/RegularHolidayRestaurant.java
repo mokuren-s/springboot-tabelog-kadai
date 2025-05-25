@@ -22,7 +22,7 @@ public class RegularHolidayRestaurant {
 	private Integer id;
 	
 	@ManyToOne
-	@JoinColumn(name = "testaurant_id")
+	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
 	
 	@ManyToOne

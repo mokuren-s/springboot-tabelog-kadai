@@ -30,8 +30,10 @@ public class UserController {
     }    
     
     @GetMapping
-    public String index(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, Model model) {         
-        User user = userRepository.getReferenceById(userDetailsImpl.getUser().getId());  
+    public String index(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+    		            Model model) {
+    	
+        User user = userDetailsImpl.getUser();  
         
         model.addAttribute("user", user);
         
@@ -39,9 +41,14 @@ public class UserController {
     }
     
     @GetMapping("/edit")
-    public String edit(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl, Model model) {        
-        User user = userRepository.getReferenceById(userDetailsImpl.getUser().getId());  
-        UserEditForm userEditForm = new UserEditForm(user.getId(), user.getName(), user.getFurigana(), user.getEmail());
+    public String edit(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+    		           Model model) {
+    	
+    	User user = userDetailsImpl.getUser();
+    	UserEditForm userEditForm = new UserEditForm(user.getId(),
+    			                                     user.getName(),
+    			                                     user.getFurigana(),
+    			                                     user.getEmail());
         
         model.addAttribute("userEditForm", userEditForm);
         
@@ -49,9 +56,16 @@ public class UserController {
     }
     
     @PostMapping("/update")
-    public String update(@ModelAttribute @Validated UserEditForm userEditForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String update(@ModelAttribute @Validated UserEditForm userEditForm,
+    		             BindingResult bindingResult,
+    		             @AuthenticationPrincipal UserDetailsImpl userDetailsImpl,
+                         RedirectAttributes redirectAttributes,
+    		             Model model) {
+    	
+    	User user = userDetailsImpl.getUser();
+    	
         // メールアドレスが変更されており、かつ登録済みであれば、BindingResultオブジェクトにエラー内容を追加する
-        if (userService.isEmailChanged(userEditForm) && userService.isEmailRegistered(userEditForm.getEmail())) {
+        if (userService.isEmailChanged(userEditForm, user) && userService.isEmailRegistered(userEditForm.getEmail())) {
             FieldError fieldError = new FieldError(bindingResult.getObjectName(), "email", "すでに登録済みのメールアドレスです。");
             bindingResult.addError(fieldError);                       
         }
@@ -60,7 +74,7 @@ public class UserController {
             return "user/edit";
         }
         
-        userService.update(userEditForm);
+        userService.updateUser(userEditForm, user);
         redirectAttributes.addFlashAttribute("successMessage", "会員情報を編集しました。");
         
         return "redirect:/user";

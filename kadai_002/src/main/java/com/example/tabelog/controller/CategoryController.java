@@ -1,6 +1,6 @@
 package com.example.tabelog.controller;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,17 +21,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.tabelog.entity.Category;
 import com.example.tabelog.form.CategoryEditForm;
 import com.example.tabelog.form.CategoryRegisterForm;
-import com.example.tabelog.repository.CategoryRepository;
 import com.example.tabelog.service.CategoryService;
 
 @Controller
 @RequestMapping("/admin/categories")
 public class CategoryController {
-	private final CategoryRepository categoryRepository;
 	private final CategoryService categoryService;
 
-	public CategoryController(CategoryRepository categoryRepository, CategoryService categoryService) {
-		this.categoryRepository = categoryRepository;
+	public CategoryController(CategoryService categoryService) {
 		this.categoryService = categoryService;
 	}
 
@@ -43,68 +40,61 @@ public class CategoryController {
 		Page<Category> categoryPage;
 		
 		if (keyword != null && !keyword.isEmpty()) {
-	    	
-	        categoryPage = categoryRepository.findByNameLike("%" + keyword + "%", pageable);
-	    
-	        } else {
-	        	categoryPage = categoryRepository.findAll(pageable);
-	        }
+	           categoryPage = categoryService.findCategoriesByNameLike(keyword, pageable);
+	       } else {
+	           categoryPage = categoryService.findAllCategories(pageable);
+	       }
 
-		model.addAttribute("categoryPage", categoryPage);
-		model.addAttribute("keyword", keyword);
+	       model.addAttribute("categoryPage", categoryPage);
+	       model.addAttribute("keyword", keyword);
+	       model.addAttribute("categoryRegisterForm", new CategoryRegisterForm());
+	       model.addAttribute("categoryEditForm", new CategoryEditForm());
 
-		return "admin/categories/index";
-	}
-
-	@GetMapping("/register")
-	public String register(Model model) {
-		List<Category> category = categoryRepository.findAll();
-
-		model.addAttribute("categoryRegisterForm", new CategoryRegisterForm());
-		model.addAttribute("category", category);
-
-		return "admin/categories/register";
+	       return "admin/categories/index";
 	}
 
 	@PostMapping("/create")
 	public String create(@ModelAttribute @Validated CategoryRegisterForm categoryRegisterForm,
 			             BindingResult bindingResult,
-			             RedirectAttributes redirectAttributes) {
+			             RedirectAttributes redirectAttributes,
+			             Model model) {
 		
 		if (bindingResult.hasErrors()) {
-			return "admin/categories/register";
+			redirectAttributes.addFlashAttribute("errorMessage", "カテゴリ名を入力してください。");
+
+			return "redirect:/admin/categories";
 		}
 
-		categoryService.create(categoryRegisterForm);
+		categoryService.createCategory(categoryRegisterForm);
 		redirectAttributes.addFlashAttribute("successMessage", "カテゴリを登録しました。");
 
 		return "redirect:/admin/categories";
 
 	}
 
-	@GetMapping("/{id}/edit")
-	public String edit(@PathVariable(name = "id") Integer id, Model model) {
-		
-		Category category = categoryRepository.getReferenceById(id);
-
-		//フォームクラスをインスタンス化する
-		CategoryEditForm categoryEditForm = new CategoryEditForm(category.getId(), category.getName());
-
-		//生成したインスタンスをビューに渡す
-		model.addAttribute("categoryEditForm", categoryEditForm);
-
-		return "admin/categories/edit";
-	}
-
 	@PostMapping("/{id}/update")
-	public String update(@ModelAttribute @Validated CategoryEditForm categoryEditForm, BindingResult bindingResult,
-			             RedirectAttributes redirectAttributes) {
+	public String update(@ModelAttribute @Validated CategoryEditForm categoryEditForm,
+			             BindingResult bindingResult,
+			             @PathVariable(name = "id") Integer id,
+	                     RedirectAttributes redirectAttributes,
+	                     Model model) {
+		
+		Optional<Category> optionalCategory = categoryService.findCategoryById(id);
+
+		if (optionalCategory.isEmpty()) {
+			redirectAttributes.addFlashAttribute("errorMessage", "カテゴリが存在しません。");
+
+			return "redirect:/admin/categories";
+		}
 		
 		if (bindingResult.hasErrors()) {
-			return "admin/categories/edit";
+			redirectAttributes.addFlashAttribute("errorMessage", "カテゴリ名を入力してください。");
+
+			return "redirect:/admin/categories";
 		}
 
-		categoryService.update(categoryEditForm);
+		Category category = optionalCategory.get();
+		categoryService.updateCategory(categoryEditForm, category);
 		redirectAttributes.addFlashAttribute("successMessage", "カテゴリを編集しました。");
 		
 		return "redirect:/admin/categories";
@@ -112,9 +102,16 @@ public class CategoryController {
 
 	@PostMapping("/{id}/delete")
 	public String delete(@PathVariable(name = "id") Integer id, RedirectAttributes redirectAttributes) {
-		// 対象idの情報を削除
-		categoryRepository.deleteById(id);
+		Optional<Category> optionalCategory = categoryService.findCategoryById(id);
 
+		if (optionalCategory.isEmpty()) {
+			redirectAttributes.addFlashAttribute("errorMessage", "カテゴリが存在しません。");
+
+			return "redirect:/admin/categories";
+		}
+
+		Category category = optionalCategory.get();
+		categoryService.deleteCategory(category);
 		redirectAttributes.addFlashAttribute("successMessage", "カテゴリを削除しました。");
 
 		return "redirect:/admin/categories";

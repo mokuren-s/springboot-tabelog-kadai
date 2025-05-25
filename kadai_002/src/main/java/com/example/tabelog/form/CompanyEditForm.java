@@ -1,20 +1,19 @@
 package com.example.tabelog.form;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class CompanyEditForm {
-	@NotNull
-	private Integer id;
-	
+
 	@NotBlank(message = "会社名を入力してください。")
     private String name;
 	
     @NotBlank(message = "郵便番号を入力してください。")
+    @Pattern(regexp = "^[0-9]{7}$", message = "郵便番号は7桁の半角数字で入力してください。")
     private String postalCode;
 	
     @NotBlank(message = "住所を入力してください。")

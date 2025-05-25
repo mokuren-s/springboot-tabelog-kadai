@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS regular_holiday_restaurant(
 	regular_holiday_id INT NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	UNIQUE (restaurant_id, regular_holiday_id),
 	FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
 	FOREIGN KEY (regular_holiday_id) REFERENCES regular_holidays(id)
 );
@@ -106,7 +107,8 @@ CREATE TABLE IF NOT EXISTS reviews(
 	user_id INT NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
+	UNIQUE (restaurant_id, user_id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
 	FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

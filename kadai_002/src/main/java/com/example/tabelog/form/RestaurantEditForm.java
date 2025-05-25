@@ -1,6 +1,7 @@
 package com.example.tabelog.form;
 
-import java.sql.Time;
+import java.time.LocalTime;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,14 +9,17 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class RestaurantEditForm {
-	@NotNull
-    private Integer id;
+	// @NotNull
+    // private Integer id;
 	
 	@NotBlank(message = "店舗名を入力してください。")
     private String name;
@@ -34,24 +38,30 @@ public class RestaurantEditForm {
     private Integer highestPrice;
     
     @NotBlank(message = "郵便番号を入力してください。")
+    @Pattern(regexp = "^[0-9]{7}$", message = "郵便番号は7桁の半角数字で入力してください。")
     private String postalCode;
     
     @NotBlank(message = "住所を入力してください。")
     private String address;
     
     @NotBlank(message = "開店時間を入力してください。")
-    private Time openingTime;
+    private LocalTime openingTime;
     
     @NotBlank(message = "閉店時間を入力してください。")
-    private Time closingTime;
+    private LocalTime closingTime;
     
-    @NotBlank(message = "定休日を入力してください。")
-    private String regularHoliday;
+    // @NotBlank(message = "定休日を入力してください。")
+    // private String regularHoliday;
     
     @NotNull(message = "座席数を入力してください。")
     @Min(value = 1, message = "座席数は1人以上に設定してください。")
     private Integer seatingCapacity;   
     
-    @NotNull(message = "カテゴリを選んでください")
-    private Integer category;
+    // @NotNull(message = "カテゴリを選んでください")
+    // private Integer category;
+    
+    private List<Integer> categoryIds;
+    
+    private List<Integer> regularHolidayIds;
+
 }

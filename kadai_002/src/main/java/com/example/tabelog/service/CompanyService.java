@@ -1,7 +1,5 @@
 package com.example.tabelog.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,12 +9,32 @@ import com.example.tabelog.repository.CompanyRepository;
 
 @Service
 public class CompanyService {
+	private final CompanyRepository companyRepository;
 
-	    private final CompanyRepository companyRepository;
-	    
-	    public CompanyService(CompanyRepository companyRepository) {
-	        this.companyRepository = companyRepository;
-	    }    
+	public CompanyService(CompanyRepository companyRepository) {
+		this.companyRepository = companyRepository;
+	}
+
+	// idが最も大きい会社概要を取得する
+	public Company findFirstCompanyByOrderByIdDesc() {
+		return companyRepository.findFirstByOrderByIdDesc();
+	}
+
+	@Transactional
+	public void updateCompany(CompanyEditForm companyEditForm, Company company) {
+		company.setName(companyEditForm.getName());
+		company.setPostalCode(companyEditForm.getPostalCode());
+		company.setAddress(companyEditForm.getAddress());
+		company.setRepresentative(companyEditForm.getRepresentative());
+		company.setCapital(companyEditForm.getCapital());
+		company.setBusiness(companyEditForm.getBusiness());
+		company.setNumberOfEmployees(companyEditForm.getNumberOfEmployees());
+
+		companyRepository.save(company);
+	}
+}
+
+/*
 	//  ユーザー情報更新
     @Transactional
     public void update(CompanyEditForm companyEditForm) {
@@ -42,4 +60,4 @@ public class CompanyService {
             throw new RuntimeException("company not found with id: " + companyEditForm.getId());
         }
     }
-}
+*/

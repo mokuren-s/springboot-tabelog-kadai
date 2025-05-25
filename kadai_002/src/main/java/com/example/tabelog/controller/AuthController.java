@@ -44,8 +44,13 @@ public class AuthController {
     }
     
     @PostMapping("/signup")
-    public String signup(@ModelAttribute @Validated SignupForm signupForm, BindingResult bindingResult, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {      
-        // メールアドレスが登録済みであれば、BindingResultオブジェクトにエラー内容を追加する
+    public String signup(@ModelAttribute @Validated SignupForm signupForm,
+    		             BindingResult bindingResult,
+    		             RedirectAttributes redirectAttributes,
+    		             HttpServletRequest httpServletRequest,
+    		             Model model) {      
+        
+    	// メールアドレスが登録済みであれば、BindingResultオブジェクトにエラー内容を追加する
         if (userService.isEmailRegistered(signupForm.getEmail())) {
             FieldError fieldError = new FieldError(bindingResult.getObjectName(), "email", "すでに登録済みのメールアドレスです。");
             bindingResult.addError(fieldError);                       
@@ -58,10 +63,12 @@ public class AuthController {
         }        
         
         if (bindingResult.hasErrors()) {
+        	model.addAttribute("signupForm", signupForm);
+        	
             return "auth/signup";
         }
         
-        User createdUser = userService.create(signupForm);
+        User createdUser = userService.createUser(signupForm);
         String requestUrl = new String(httpServletRequest.getRequestURL());
         signupEventPublisher.publishSignupEvent(createdUser, requestUrl);
         redirectAttributes.addFlashAttribute("successMessage", "ご入力いただいたメールアドレスに認証メールを送信しました。メールに記載されているリンクをクリックし、会員登録を完了してください。");        
@@ -71,7 +78,7 @@ public class AuthController {
     
     @GetMapping("/signup/verify")
     public String verify(@RequestParam(name = "token") String token, Model model) {
-        VerificationToken verificationToken = verificationTokenService.getVerificationToken(token);
+        VerificationToken verificationToken = verificationTokenService.findVerificationTokenByToken(token);
         
         if (verificationToken != null) {
             User user = verificationToken.getUser();  
